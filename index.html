@@ -2,14 +2,1018 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=./web/index.html" />
-  <title>食譜 LLM Wiki</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>食譜 LLM Wiki — 私人料理知識庫</title>
+  <style>
+    :root {
+      --bg: #faf7f2;
+      --surface: #ffffff;
+      --surface-alt: #f3ede2;
+      --text: #2a241e;
+      --muted: #6e6256;
+      --accent: #c85a32;
+      --accent-soft: #fae8e0;
+      --green: #2f7d5b;
+      --green-soft: #e4f3ec;
+      --amber: #b7791f;
+      --amber-soft: #fef3c7;
+      --border: #e5dccf;
+      --radius: 14px;
+      --shadow: 0 6px 20px rgba(42, 36, 30, 0.06);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(250, 247, 242, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+    .brand-badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tab-btn {
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.18s;
+    }
+    .tab-btn:hover { background: var(--surface-alt); color: var(--text); }
+    .tab-btn.active {
+      background: var(--text);
+      color: #fff;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 24px 20px 64px;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 220px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+    .chip {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .chip.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.18s;
+    }
+    .card:hover { transform: translateY(-2px); }
+    .card-img {
+      width: 100%;
+      height: 175px;
+      object-fit: cover;
+      background: var(--surface-alt);
+    }
+    .card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .pill {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: var(--surface-alt);
+      color: var(--text);
+    }
+    .pill.accent { background: var(--accent-soft); color: var(--accent); }
+    .pill.green { background: var(--green-soft); color: var(--green); }
+    .pill.amber { background: var(--amber-soft); color: var(--amber); }
+    .card-title {
+      margin: 0;
+      font-size: 1.1rem;
+      line-height: 1.35;
+    }
+    .card-actions {
+      margin-top: auto;
+      display: flex;
+      gap: 8px;
+      padding-top: 8px;
+    }
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 8px 13px;
+      border-radius: 9px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .btn.primary:hover { filter: brightness(0.95); }
+    .btn:hover { background: var(--surface-alt); }
+    .btn.primary:hover { background: var(--accent); }
+
+    /* Modal / Detail Drawer */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(25, 20, 15, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 50;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: 18px;
+      max-width: 780px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 26px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+    }
+    .scaler-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface-alt);
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .step-item {
+      display: flex;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .step-item.done {
+      background: var(--green-soft);
+      border-color: #b7dfc9;
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+    .ing-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 18px;
+    }
+    .ing-table td {
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 760px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .fridge-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0 20px;
+    }
+    .wiki-link {
+      color: var(--accent);
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .empty-hint {
+      color: var(--muted);
+      padding: 24px;
+      text-align: center;
+      background: var(--surface-alt);
+      border-radius: 12px;
+    }
+    .graph-layout {
+      display: grid;
+      grid-template-columns: 1.7fr 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 860px) {
+      .graph-layout { grid-template-columns: 1fr; }
+    }
+    .graph-canvas {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+    .graph-legend {
+      display: flex;
+      gap: 14px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.84rem;
+      background: var(--surface-alt);
+      flex-wrap: wrap;
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      margin-right: 5px;
+    }
+    .g-node { cursor: pointer; transition: opacity 0.15s; }
+    .g-edge { transition: opacity 0.15s, stroke-width 0.15s; }
+    .note-box {
+      margin-top: 18px;
+      padding: 14px;
+      background: var(--surface-alt);
+      border-radius: 12px;
+    }
+    .note-box textarea {
+      width: 100%;
+      min-height: 70px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      margin: 8px 0;
+    }
+  </style>
 </head>
-<body style="font-family:sans-serif;padding:40px;text-align:center">
-  <p>正在前往食譜 LLM Wiki...</p>
-  <p>
-    <a href="./web/index.html">進入食譜 Wiki</a> ｜
-    <a href="./presentation.html">觀看入門教學簡報</a>
-  </p>
+<body>
+  <header>
+    <div class="nav-wrap">
+      <div class="brand">
+        <span>🍜 食譜 LLM Wiki</span>
+        <span class="brand-badge">方案 A · 本地知識庫</span>
+      </div>
+      <nav class="tabs" id="nav-tabs">
+        <button class="tab-btn active" data-tab="recipes">食譜總覽</button>
+        <button class="tab-btn" data-tab="fridge">🧊 清冰箱找靈感</button>
+        <button class="tab-btn" data-tab="shopping">🛒 採購清單 (<span id="cart-count">0</span>)</button>
+        <button class="tab-btn" data-tab="ingredients">🥬 食材百科</button>
+        <button class="tab-btn" data-tab="techniques">🔥 烹飪技法</button>
+        <button class="tab-btn" data-tab="graph">🕸️ 知識圖譜</button>
+        <button class="tab-btn" data-tab="ask">💬 Wiki 問答</button>
+        <a class="tab-btn" href="../presentation.html" style="text-decoration:none">🎓 教學簡報</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="app"></main>
+
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal" id="modal-content"></div>
+  </div>
+
+  <script src="./data.js"></script>
+  <script>
+    const DATA = window.RECIPE_WIKI_DATA || { recipes: [], ingredients: [], techniques: [] };
+    const state = {
+      tab: "recipes",
+      search: "",
+      category: "全部",
+      fridgeSelected: new Set(),
+      menuCart: {}, // recipeId -> servings
+      checkedShopping: new Set(),
+    };
+
+    function fmtNum(n) {
+      if (n === 0 || n === null || n === undefined) return "";
+      const rounded = Math.round(n * 100) / 100;
+      return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function extractSteps(body) {
+      const lines = (body || "").split("\n");
+      const steps = [];
+      let inSteps = false;
+      for (const line of lines) {
+        if (line.startsWith("## 烹飪步驟")) { inSteps = true; continue; }
+        if (inSteps && line.startsWith("## ")) break;
+        if (inSteps && /^\d+\.\s+/.test(line.trim())) {
+          steps.push(line.trim().replace(/^\d+\.\s+/, ""));
+        }
+      }
+      return steps;
+    }
+
+    function extractIntro(body) {
+      const m = (body || "").match(/## 料理簡介\s*\n([\s\S]*?)(\n## |$)/);
+      return m ? m[1].trim() : "";
+    }
+
+    function updateCartCount() {
+      document.getElementById("cart-count").textContent = Object.keys(state.menuCart).length;
+    }
+
+    function toggleCart(recipeId, defaultServings) {
+      if (state.menuCart[recipeId]) {
+        delete state.menuCart[recipeId];
+      } else {
+        state.menuCart[recipeId] = defaultServings || 1;
+      }
+      updateCartCount();
+      render();
+    }
+
+    function openRecipeModal(recipeId) {
+      const r = DATA.recipes.find(x => x.id === recipeId);
+      if (!r) return;
+      let targetServings = r.servings || 1;
+      const steps = extractSteps(r.body);
+      const intro = extractIntro(r.body);
+
+      const renderModal = () => {
+        const ratio = targetServings / (r.servings || 1);
+        const ingRows = (r.ingredients || []).map(ing => {
+          const amtText = ing.scalable && ing.amount
+            ? `${fmtNum(ing.amount * ratio)} ${escapeHtml(ing.unit)}`
+            : `${escapeHtml(ing.unit)}`;
+          return `<tr>
+            <td><strong>${escapeHtml(ing.name)}</strong>${ing.note ? ` <span style="color:var(--muted);font-size:0.85rem">(${escapeHtml(ing.note)})</span>` : ""}</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent)">${amtText}</td>
+          </tr>`;
+        }).join("");
+
+        const techHtml = (r.techniques || []).map(t =>
+          `<span class="pill accent" style="cursor:pointer" onclick="openTechFromModal('${escapeHtml(t)}')">🔥 ${escapeHtml(t)}</span>`
+        ).join(" ");
+
+        document.getElementById("modal-content").innerHTML = `
+          <div class="modal-header">
+            <div>
+              <div class="meta-row" style="margin-bottom:6px">
+                <span class="pill">${escapeHtml(r.category)}</span>
+                <span class="pill">⏱ ${r.prep_time} 分鐘</span>
+                <span class="pill">👤 ${escapeHtml(r.author)}</span>
+              </div>
+              <h2 style="margin:0">${escapeHtml(r.title)}</h2>
+            </div>
+            <button class="btn" onclick="closeModal()">✕ 關閉</button>
+          </div>
+          <p style="margin-top:0;color:var(--muted)">${escapeHtml(intro)}</p>
+          <div style="margin-bottom:16px;display:flex;flex-wrap:wrap;gap:6px">${techHtml}</div>
+
+          <div class="scaler-box">
+            <strong>⚖️ 份量換算：</strong>
+            <button class="btn" id="dec-srv">－</button>
+            <strong style="min-width:64px;text-align:center">${targetServings} 人份</strong>
+            <button class="btn" id="inc-srv">＋</button>
+            <span style="color:var(--muted);font-size:0.85rem">（原食譜 ${r.servings} 人份）</span>
+            <button class="btn primary" style="margin-left:auto" id="modal-add-cart">
+              ${state.menuCart[r.id] ? "✓ 已在採購菜單" : "＋ 加入採購清單"}
+            </button>
+          </div>
+
+          <h3>🥬 食材清單</h3>
+          <table class="ing-table">${ingRows}</table>
+
+          <h3>👩‍🍳 烹飪步驟（點擊可打勾紀錄進度）</h3>
+          <div id="steps-list">
+            ${steps.map((s, idx) => `
+              <div class="step-item" onclick="this.classList.toggle('done')">
+                <strong>${idx + 1}.</strong>
+                <span>${escapeHtml(s.replace(/\*\*/g, ""))}</span>
+              </div>
+            `).join("")}
+          </div>
+          <div style="margin-top:16px;font-size:0.88rem">
+            原始來源：<a href="${escapeHtml(r.source_url)}" target="_blank" rel="noreferrer">${escapeHtml(r.source_url)}</a>
+          </div>
+          <div class="note-box">
+            <strong>📝 烹飪回饋筆記（Feedback Loop）</strong>
+            <div style="font-size:0.82rem;color:var(--muted)">記錄實作心得（例如：少鹽更剛好、麵煮 4 分鐘更 Q），可一鍵複製給 AI 回寫更新 Wiki。</div>
+            <textarea id="cooking-note-input" placeholder="寫下這次煮完的心得或微調建議...">${escapeHtml(localStorage.getItem("wiki_note_" + r.id) || "")}</textarea>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn" id="save-note-btn">💾 暫存於瀏覽器</button>
+              <button class="btn primary" id="copy-feedback-btn">📋 複製回饋給 AI 更新 Wiki</button>
+            </div>
+          </div>
+        `;
+        document.getElementById("dec-srv").onclick = () => { if (targetServings > 1) { targetServings--; renderModal(); } };
+        document.getElementById("inc-srv").onclick = () => { targetServings++; renderModal(); };
+        document.getElementById("modal-add-cart").onclick = () => {
+          state.menuCart[r.id] = targetServings;
+          updateCartCount();
+          renderModal();
+        };
+        document.getElementById("save-note-btn").onclick = () => {
+          const val = document.getElementById("cooking-note-input").value;
+          localStorage.setItem("wiki_note_" + r.id, val);
+          alert("已儲存在瀏覽器中！");
+        };
+        document.getElementById("copy-feedback-btn").onclick = () => {
+          const val = document.getElementById("cooking-note-input").value.trim();
+          if (!val) { alert("請先輸入回饋內容！"); return; }
+          localStorage.setItem("wiki_note_" + r.id, val);
+          const msg = `請幫我把以下烹飪回饋更新進食譜 Wiki（${r.id} ${r.title}）並同步 log.md：\n「${val}」`;
+          navigator.clipboard?.writeText(msg);
+          alert("已複製回饋指令！直接貼給 AI 即可更新 Wiki。");
+        };
+      };
+
+      renderModal();
+      document.getElementById("modal-backdrop").classList.add("open");
+    }
+
+    function openTechFromModal(techTitle) {
+      closeModal();
+      state.tab = "techniques";
+      render();
+    }
+
+    function closeModal() {
+      document.getElementById("modal-backdrop").classList.remove("open");
+    }
+    document.getElementById("modal-backdrop").onclick = (e) => {
+      if (e.target.id === "modal-backdrop") closeModal();
+    };
+
+    function renderRecipes() {
+      const categories = ["全部", ...new Set(DATA.recipes.map(r => r.category))];
+      const q = state.search.trim().toLowerCase();
+      const filtered = DATA.recipes.filter(r => {
+        if (state.category !== "全部" && r.category !== state.category) return false;
+        if (!q) return true;
+        const hay = [r.title, r.category, ...(r.tags || []), ...(r.ingredients || []).map(i => i.name)].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+
+      return `
+        <div class="toolbar">
+          <input class="search-input" id="search-box" placeholder="搜尋菜名、食材（例如：蛤蜊、蒜頭、義大利麵）..." value="${escapeHtml(state.search)}" />
+          ${categories.map(c => `<button class="chip ${state.category === c ? "active" : ""}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join("")}
+        </div>
+        <div class="grid">
+          ${filtered.map(r => `
+            <article class="card">
+              <img class="card-img" src="${escapeHtml(r.image)}" alt="${escapeHtml(r.title)}" onerror="this.style.display='none'" />
+              <div class="card-body">
+                <div class="meta-row">
+                  <span class="pill accent">${escapeHtml(r.category)}</span>
+                  <span class="pill">⏱ ${r.prep_time} 分</span>
+                  <span class="pill">🍽 ${r.servings} 人份</span>
+                </div>
+                <h3 class="card-title">${escapeHtml(r.title)}</h3>
+                <div class="meta-row">
+                  ${(r.tags || []).slice(0, 4).map(t => `<span>#${escapeHtml(t)}</span>`).join("")}
+                </div>
+                <div class="card-actions">
+                  <button class="btn primary" style="flex:1" onclick="openRecipeModal('${r.id}')">看食譜與換算</button>
+                  <button class="btn" onclick="toggleCart('${r.id}', ${r.servings})">${state.menuCart[r.id] ? "✓ 已選" : "＋ 買菜"}</button>
+                </div>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function normalizeIngName(name) {
+      return name.replace(/（.*?）/g, "").trim();
+    }
+
+    function renderFridge() {
+      const allIngs = new Set();
+      DATA.recipes.forEach(r => (r.ingredients || []).forEach(i => allIngs.add(normalizeIngName(i.name))));
+      const ingList = [...allIngs];
+
+      const scored = DATA.recipes.map(r => {
+        const req = (r.ingredients || []).map(i => normalizeIngName(i.name));
+        const have = req.filter(x => state.fridgeSelected.has(x));
+        const missing = req.filter(x => !state.fridgeSelected.has(x));
+        return { recipe: r, have, missing };
+      }).sort((a, b) => a.missing.length - b.missing.length || b.have.length - a.have.length);
+
+      return `
+        <div class="panel">
+          <h2 style="margin-top:0">🧊 清冰箱 / 找靈感</h2>
+          <p style="color:var(--muted);margin-bottom:8px">點選你現在冰箱或櫥櫃裡有的食材，系統會即時計算還缺幾樣就能開煮：</p>
+          <div class="fridge-tags">
+            ${ingList.map(ing => `
+              <button class="chip ${state.fridgeSelected.has(ing) ? "active" : ""}" data-fridge="${escapeHtml(ing)}">
+                ${state.fridgeSelected.has(ing) ? "✓ " : ""}${escapeHtml(ing)}
+              </button>
+            `).join("")}
+          </div>
+          ${state.fridgeSelected.size === 0 ? `<div class="empty-hint">請先上方點選至少 1 樣手邊食材（例如：蛤蜊、蒜頭、義大利麵）</div>` : `
+            <div class="grid">
+              ${scored.map(item => {
+                const missCount = item.missing.length;
+                const badgeClass = missCount === 0 ? "green" : missCount <= 2 ? "amber" : "";
+                const badgeText = missCount === 0 ? "🎉 材料齊全可立刻煮！" : `還缺 ${missCount} 樣`;
+                return `
+                  <div class="card">
+                    <div class="card-body">
+                      <div><span class="pill ${badgeClass}">${badgeText}</span></div>
+                      <h3 class="card-title">${escapeHtml(item.recipe.title)}</h3>
+                      <div style="font-size:0.86rem;color:var(--green)">✓ 已有：${item.have.length ? item.have.map(escapeHtml).join("、") : "無"}</div>
+                      <div style="font-size:0.86rem;color:var(--muted)">✕ 缺少：${item.missing.length ? item.missing.map(escapeHtml).join("、") : "無"}</div>
+                      <div class="card-actions">
+                        <button class="btn primary" onclick="openRecipeModal('${item.recipe.id}')">查看作法</button>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function renderShopping() {
+      const selectedIds = Object.keys(state.menuCart);
+      const merged = {};
+      selectedIds.forEach(id => {
+        const r = DATA.recipes.find(x => x.id === id);
+        if (!r) return;
+        const ratio = (state.menuCart[id] || r.servings) / (r.servings || 1);
+        (r.ingredients || []).forEach(ing => {
+          const key = `${ing.name}__${ing.unit}`;
+          if (!merged[key]) {
+            merged[key] = { name: ing.name, unit: ing.unit, amount: 0, scalable: ing.scalable, recipes: [] };
+          }
+          if (ing.scalable && ing.amount) {
+            merged[key].amount += ing.amount * ratio;
+          }
+          merged[key].recipes.push(r.title);
+        });
+      });
+
+      const list = Object.entries(merged);
+      return `
+        <div class="two-col">
+          <div class="panel">
+            <h2 style="margin-top:0">📋 本週菜單（調整人份）</h2>
+            ${selectedIds.length === 0 ? `<div class="empty-hint">尚未加入任何食譜。請到「食譜總覽」點擊「＋ 買菜」。</div>` : selectedIds.map(id => {
+              const r = DATA.recipes.find(x => x.id === id);
+              return `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+                  <div>
+                    <strong>${escapeHtml(r.title)}</strong>
+                    <div style="font-size:0.82rem;color:var(--muted)">原食譜 ${r.servings} 人份</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <button class="btn" onclick="adjCart('${id}', -1)">－</button>
+                    <strong style="min-width:48px;text-align:center">${state.menuCart[id]} 人</strong>
+                    <button class="btn" onclick="adjCart('${id}', 1)">＋</button>
+                    <button class="btn" onclick="toggleCart('${id}')">移除</button>
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+
+          <div class="panel">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <h2 style="margin-top:0">🛒 合併採購清單</h2>
+              ${list.length ? `<button class="btn primary" onclick="copyShopping()">複製清單</button>` : ""}
+            </div>
+            ${list.length === 0 ? `<div class="empty-hint">加入食譜後，這裡會自動合併重複的食材與數量。</div>` : list.map(([key, item]) => {
+              const checked = state.checkedShopping.has(key);
+              const amt = item.scalable && item.amount ? `${fmtNum(item.amount)} ${item.unit}` : item.unit;
+              return `
+                <div class="step-item ${checked ? "done" : ""}" onclick="toggleShopItem('${escapeHtml(key)}')">
+                  <input type="checkbox" ${checked ? "checked" : ""} />
+                  <div style="flex:1">
+                    <strong>${escapeHtml(item.name)}</strong> — <span style="color:var(--accent);font-weight:700">${escapeHtml(amt)}</span>
+                    <div style="font-size:0.78rem;color:var(--muted)">用於：${escapeHtml([...new Set(item.recipes)].join("、"))}</div>
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderWikiCards(items, type) {
+      return `
+        <div class="grid">
+          ${items.map(item => {
+            const rel = (item.related_recipes || []).map(rid => {
+              const r = DATA.recipes.find(x => x.id === rid);
+              return r ? `<span class="wiki-link" onclick="openRecipeModal('${r.id}')">${escapeHtml(r.title)}</span>` : "";
+            }).filter(Boolean).join("、");
+            const bodyHtml = escapeHtml(item.body || "")
+              .replace(/\[\[(.*?)\]\]/g, "<strong>$1</strong>")
+              .replace(/## (.*)/g, "<h4 style='margin:10px 0 4px;color:var(--accent)'>$1</h4>")
+              .replace(/\n/g, "<br>");
+            return `
+              <div class="panel">
+                <div class="meta-row" style="margin-bottom:6px">
+                  <span class="pill accent">${escapeHtml(item.category || type)}</span>
+                  ${item.difficulty ? `<span class="pill">難度：${escapeHtml(item.difficulty)}</span>` : ""}
+                </div>
+                <h3 style="margin:0 0 8px">${escapeHtml(item.title)}</h3>
+                ${item.storage ? `<div style="font-size:0.86rem;background:var(--surface-alt);padding:8px 10px;border-radius:8px;margin-bottom:8px">📦 <strong>保存：</strong>${escapeHtml(item.storage)}</div>` : ""}
+                ${item.substitutes ? `<div style="font-size:0.86rem;margin-bottom:8px">🔄 <strong>可替代：</strong>${item.substitutes.map(escapeHtml).join("、")}</div>` : ""}
+                <div style="font-size:0.9rem;color:var(--text)">${bodyHtml}</div>
+                ${rel ? `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:0.85rem">🔗 關聯食譜：${rel}</div>` : ""}
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function adjCart(id, delta) {
+      state.menuCart[id] = Math.max(1, (state.menuCart[id] || 1) + delta);
+      render();
+    }
+    function toggleShopItem(key) {
+      if (state.checkedShopping.has(key)) state.checkedShopping.delete(key);
+      else state.checkedShopping.add(key);
+      render();
+    }
+    function copyShopping() {
+      const lines = [...document.querySelectorAll("#app .step-item")].map(el => "• " + el.innerText.split("\n")[0]);
+      navigator.clipboard?.writeText(lines.join("\n"));
+      alert("已複製採購清單到剪貼簿！");
+    }
+
+    function buildGraphData() {
+      const nodes = [];
+      const edges = [];
+      const W = 680, H = 460;
+      const cx = W / 2, cy = H / 2;
+
+      const rCount = DATA.recipes.length || 1;
+      DATA.recipes.forEach((r, i) => {
+        const ang = (i / rCount) * Math.PI * 2 - Math.PI / 2;
+        nodes.push({
+          id: "r:" + r.id,
+          label: r.title.length > 10 ? r.title.slice(0, 10) + "…" : r.title,
+          fullTitle: r.title,
+          type: "recipe",
+          ref: r,
+          x: cx + Math.cos(ang) * 155,
+          y: cy + Math.sin(ang) * 145,
+          color: "#c85a32",
+        });
+      });
+
+      const iCount = DATA.ingredients.length || 1;
+      DATA.ingredients.forEach((ing, i) => {
+        const ang = (i / iCount) * Math.PI * 2 - Math.PI / 3;
+        const nid = "i:" + ing.title;
+        nodes.push({
+          id: nid,
+          label: ing.title,
+          fullTitle: ing.title,
+          type: "ingredient",
+          ref: ing,
+          x: cx + Math.cos(ang) * 70,
+          y: cy + Math.sin(ang) * 65,
+          color: "#2f7d5b",
+        });
+        (ing.related_recipes || []).forEach(rid => {
+          edges.push({ from: nid, to: "r:" + rid });
+        });
+      });
+
+      const tCount = DATA.techniques.length || 1;
+      DATA.techniques.forEach((tech, i) => {
+        const ang = (i / tCount) * Math.PI * 2 + Math.PI / 5;
+        const nid = "t:" + tech.title;
+        nodes.push({
+          id: nid,
+          label: tech.title.length > 9 ? tech.title.slice(0, 9) + "…" : tech.title,
+          fullTitle: tech.title,
+          type: "technique",
+          ref: tech,
+          x: cx + Math.cos(ang) * 235,
+          y: cy + Math.sin(ang) * 195,
+          color: "#2b5c8f",
+        });
+        (tech.related_recipes || []).forEach(rid => {
+          edges.push({ from: nid, to: "r:" + rid });
+        });
+      });
+
+      return { nodes, edges, W, H };
+    }
+
+    function selectGraphNode(nodeId) {
+      const { nodes, edges } = buildGraphData();
+      const node = nodes.find(n => n.id === nodeId);
+      if (!node) return;
+      const connectedIds = new Set([nodeId]);
+      edges.forEach(e => {
+        if (e.from === nodeId) connectedIds.add(e.to);
+        if (e.to === nodeId) connectedIds.add(e.from);
+      });
+
+      document.querySelectorAll(".g-node").forEach(el => {
+        el.style.opacity = connectedIds.has(el.dataset.nid) ? "1" : "0.22";
+      });
+      document.querySelectorAll(".g-edge").forEach(el => {
+        const hit = el.dataset.from === nodeId || el.dataset.to === nodeId;
+        el.style.opacity = hit ? "0.95" : "0.12";
+        el.style.strokeWidth = hit ? "2.6" : "1.2";
+        el.style.stroke = hit ? "#c85a32" : "#cbbfae";
+      });
+
+      const neighbors = nodes.filter(n => n.id !== nodeId && connectedIds.has(n.id));
+      const typeLabel = node.type === "recipe" ? "🍜 食譜" : node.type === "ingredient" ? "🥬 食材百科" : "🔥 烹飪技法";
+      const actionBtn = node.type === "recipe"
+        ? `<button class="btn primary" onclick="openRecipeModal('${node.ref.id}')">開啟完整食譜與換算</button>`
+        : `<button class="btn" onclick="state.tab='${node.type === "ingredient" ? "ingredients" : "techniques"}';render()">前往百科頁</button>`;
+
+      document.getElementById("graph-inspector").innerHTML = `
+        <span class="pill accent">${typeLabel}</span>
+        <h3 style="margin:8px 0">${escapeHtml(node.fullTitle)}</h3>
+        <div style="font-size:0.88rem;color:var(--muted);margin-bottom:12px">
+          <strong>直接相連的節點（${neighbors.length}）：</strong>
+          <ul style="padding-left:18px;margin:6px 0">
+            ${neighbors.map(nb => `<li><span class="wiki-link" onclick="selectGraphNode('${escapeHtml(nb.id)}')">${escapeHtml(nb.fullTitle)}</span></li>`).join("")}
+          </ul>
+        </div>
+        ${actionBtn}
+      `;
+    }
+
+    function renderGraph() {
+      const { nodes, edges, W, H } = buildGraphData();
+      const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
+      const edgeSvg = edges.map(e => {
+        const a = nodeMap[e.from], b = nodeMap[e.to];
+        if (!a || !b) return "";
+        return `<line class="g-edge" data-from="${escapeHtml(e.from)}" data-to="${escapeHtml(e.to)}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#cbbfae" stroke-width="1.3" opacity="0.7" />`;
+      }).join("");
+
+      const nodeSvg = nodes.map(n => `
+        <g class="g-node" data-nid="${escapeHtml(n.id)}" onclick="selectGraphNode('${escapeHtml(n.id)}')">
+          <circle cx="${n.x}" cy="${n.y}" r="${n.type === "recipe" ? 16 : 12}" fill="${n.color}" stroke="#fff" stroke-width="2.5" />
+          <text x="${n.x}" y="${n.y + (n.type === "recipe" ? 28 : 24)}" text-anchor="middle" font-size="11.5" font-weight="600" fill="#2a241e">${escapeHtml(n.label)}</text>
+        </g>
+      `).join("");
+
+      return `
+        <div class="graph-layout">
+          <div class="graph-canvas">
+            <div class="graph-legend">
+              <span><i class="legend-dot" style="background:#c85a32"></i>食譜 (${DATA.recipes.length})</span>
+              <span><i class="legend-dot" style="background:#2f7d5b"></i>食材百科 (${DATA.ingredients.length})</span>
+              <span><i class="legend-dot" style="background:#2b5c8f"></i>烹飪技法 (${DATA.techniques.length})</span>
+              <span style="margin-left:auto;color:var(--muted)">點擊任一節點查看關聯</span>
+            </div>
+            <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+              ${edgeSvg}
+              ${nodeSvg}
+            </svg>
+          </div>
+          <div class="panel" id="graph-inspector">
+            <h3 style="margin-top:0">🕸️ 知識圖譜檢視器</h3>
+            <p style="color:var(--muted);font-size:0.92rem">點選左側圖譜中的任一個節點，即可高亮顯示所有雙向關聯的食譜、食材與技法。</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAsk() {
+      const savedKey = localStorage.getItem("wiki_gemini_key") || "";
+      const logHtml = escapeHtml(DATA.log || "").replace(/\n/g, "<br>");
+      return `
+        <div class="two-col">
+          <div class="panel">
+            <h2 style="margin-top:0">💬 Wiki 問答（Query Loop）</h2>
+            <p style="color:var(--muted);font-size:0.9rem">
+              直接搜尋知識庫回答（免 API Key 即可離線使用）；若填入 Gemini API Key，則會由 LLM 綜合 Wiki 內容為你解答。
+            </p>
+            <input class="search-input" id="ask-input" style="width:100%;margin-bottom:10px" placeholder="例如：我有蛤蜊跟蒜頭可以煮什麼？或：義大利麵怎麼乳化？" />
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+              <button class="btn primary" onclick="runWikiAsk()">送出提問</button>
+              <button class="btn" onclick="document.getElementById('ask-input').value='蛤蜊吐沙與烹煮有什麼技巧？';runWikiAsk()">範例：蛤蜊技巧</button>
+              <button class="btn" onclick="document.getElementById('ask-input').value='怎麼讓泡麵不軟爛？';runWikiAsk()">範例：泡麵控時</button>
+            </div>
+            <details style="margin-bottom:12px;font-size:0.85rem;color:var(--muted)">
+              <summary style="cursor:pointer">⚙️ 選填 Gemini API Key（不填也能離線檢索 Wiki）</summary>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <input class="search-input" id="gemini-key-input" type="password" placeholder="貼上 AIza... API Key" value="${escapeHtml(savedKey)}" />
+                <button class="btn" onclick="localStorage.setItem('wiki_gemini_key', document.getElementById('gemini-key-input').value.trim());alert('已儲存 API Key')">儲存</button>
+              </div>
+            </details>
+            <div id="ask-output" class="empty-hint" style="text-align:left">請輸入問題開始查詢知識庫。</div>
+          </div>
+
+          <div class="panel">
+            <h2 style="margin-top:0">📜 Wiki 異動日誌 (log.md)</h2>
+            <div style="font-size:0.88rem;color:var(--muted);line-height:1.65;max-height:420px;overflow-y:auto">
+              ${logHtml || "尚無紀錄"}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function runWikiAsk() {
+      const q = (document.getElementById("ask-input")?.value || "").trim();
+      const out = document.getElementById("ask-output");
+      if (!q) return;
+
+      const tokens = q.toLowerCase().split(/[\s,，。？?！!、]+/).filter(Boolean);
+      const scoreText = (txt) => tokens.reduce((acc, t) => acc + (txt.toLowerCase().includes(t) ? 1 : 0), 0);
+
+      const hits = [
+        ...DATA.recipes.map(r => ({ type: "🍜 食譜", title: r.title, text: r.body, id: r.id, score: scoreText(r.title + " " + r.body + " " + (r.ingredients || []).map(i => i.name).join(" ")) })),
+        ...DATA.ingredients.map(i => ({ type: "🥬 食材", title: i.title, text: i.body, score: scoreText(i.title + " " + i.body) })),
+        ...DATA.techniques.map(t => ({ type: "🔥 技法", title: t.title, text: t.body, score: scoreText(t.title + " " + t.body) })),
+      ].filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 4);
+
+      const apiKey = (localStorage.getItem("wiki_gemini_key") || "").trim();
+      if (apiKey) {
+        out.innerHTML = "🤖 正在請 Gemini 綜合 Wiki 知識庫回答中...";
+        try {
+          const context = (hits.length ? hits : DATA.recipes.slice(0, 3).map(r => ({ type: "食譜", title: r.title, text: r.body })))
+            .map(h => `【${h.type}：${h.title}】\n${h.text}`).join("\n\n");
+          const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: `你是食譜 LLM Wiki 助手，請根據以下知識庫內容，用繁體中文簡潔回答使用者問題：\n\n${context}\n\n問題：${q}` }] }]
+            })
+          });
+          const data = await resp.json();
+          const ans = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (ans) {
+            out.innerHTML = `<div style="color:var(--text);white-space:pre-wrap">${escapeHtml(ans)}</div>`;
+            return;
+          }
+        } catch (err) {
+          // fallback to local wiki retrieval
+        }
+      }
+
+      if (!hits.length) {
+        out.innerHTML = "在目前 Wiki 中找不到直接相符的條目，建議換個關鍵字（例如：蛤蜊、蒜頭、泡麵、義大利麵、芝麻醬）。";
+        return;
+      }
+      out.innerHTML = `
+        <div style="margin-bottom:8px;color:var(--text)"><strong>🔍 Wiki 檢索結果（離線模式）：</strong></div>
+        ${hits.map(h => `
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+            <span class="pill accent">${h.type}</span> <strong>${escapeHtml(h.title)}</strong>
+            ${h.id ? `<button class="btn" style="float:right;padding:3px 8px;font-size:0.78rem" onclick="openRecipeModal('${h.id}')">開啟</button>` : ""}
+            <div style="font-size:0.85rem;color:var(--muted);margin-top:6px">${escapeHtml(h.text.slice(0, 140))}...</div>
+          </div>
+        `).join("")}
+      `;
+    }
+
+    function render() {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === state.tab));
+      const app = document.getElementById("app");
+      if (state.tab === "recipes") app.innerHTML = renderRecipes();
+      else if (state.tab === "fridge") app.innerHTML = renderFridge();
+      else if (state.tab === "shopping") app.innerHTML = renderShopping();
+      else if (state.tab === "ingredients") app.innerHTML = renderWikiCards(DATA.ingredients, "食材");
+      else if (state.tab === "techniques") app.innerHTML = renderWikiCards(DATA.techniques, "技法");
+      else if (state.tab === "graph") app.innerHTML = renderGraph();
+      else if (state.tab === "ask") app.innerHTML = renderAsk();
+
+      const sb = document.getElementById("search-box");
+      if (sb) sb.oninput = (e) => { state.search = e.target.value; render(); document.getElementById("search-box").focus(); };
+      document.querySelectorAll("[data-cat]").forEach(btn => {
+        btn.onclick = () => { state.category = btn.dataset.cat; render(); };
+      });
+      document.querySelectorAll("[data-fridge]").forEach(btn => {
+        btn.onclick = () => {
+          const val = btn.dataset.fridge;
+          if (state.fridgeSelected.has(val)) state.fridgeSelected.delete(val);
+          else state.fridgeSelected.add(val);
+          render();
+        };
+      });
+    }
+
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.onclick = () => { state.tab = btn.dataset.tab; render(); };
+    });
+    updateCartCount();
+    render();
+  </script>
 </body>
 </html>
