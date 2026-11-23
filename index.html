@@ -368,7 +368,7 @@
         <button class="tab-btn" data-tab="graph">🕸️ 知識圖譜</button>
         <button class="tab-btn" data-tab="ask">💬 Wiki 問答</button>
         <button class="tab-btn" data-tab="add">➕ 新增食譜</button>
-        <a class="tab-btn" href="../presentation.html" style="text-decoration:none">🎓 教學簡報</a>
+        <button class="tab-btn" onclick="openPresentation()">🎓 教學簡報</button>
       </nav>
     </div>
   </header>
@@ -1076,6 +1076,15 @@
           <button class="btn" onclick="state.tab='recipes';render()">回到食譜總覽</button>
         </div>
       `;
+    }
+
+    function openPresentation() {
+      const p = location.pathname;
+      if (p.endsWith("/web")) {
+        location.href = p.replace(/\/web$/, "/presentation.html");
+      } else {
+        location.href = "../presentation.html";
+      }
     }
 
     function render() {
