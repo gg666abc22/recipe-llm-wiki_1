@@ -367,6 +367,7 @@
         <button class="tab-btn" data-tab="techniques">🔥 烹飪技法</button>
         <button class="tab-btn" data-tab="graph">🕸️ 知識圖譜</button>
         <button class="tab-btn" data-tab="ask">💬 Wiki 問答</button>
+        <button class="tab-btn" data-tab="add">➕ 新增食譜</button>
         <a class="tab-btn" href="../presentation.html" style="text-decoration:none">🎓 教學簡報</a>
       </nav>
     </div>
@@ -381,6 +382,10 @@
   <script src="./data.js"></script>
   <script>
     const DATA = window.RECIPE_WIKI_DATA || { recipes: [], ingredients: [], techniques: [] };
+    try {
+      const savedCustom = JSON.parse(localStorage.getItem("wiki_custom_recipes") || "[]");
+      if (Array.isArray(savedCustom)) DATA.recipes.push(...savedCustom);
+    } catch (e) {}
     const state = {
       tab: "recipes",
       search: "",
@@ -983,6 +988,96 @@
       `;
     }
 
+    function renderAddRecipe() {
+      return `
+        <div class="two-col">
+          <div class="panel">
+            <h2 style="margin-top:0">➕ 直接在網頁新增食譜</h2>
+            <p style="color:var(--muted);font-size:0.9rem">
+              填入找到的新食譜，網頁會自動做格式與單位檢查（Lint），通過後直接加入你的食譜總覽、清冰箱與採購清單！
+            </p>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <input class="search-input" id="add-title" placeholder="菜名（例如：蒜香培根義大利麵）" />
+              <div style="display:flex;gap:8px">
+                <input class="search-input" id="add-cat" placeholder="分類（例如：義大利麵、湯麵）" value="乾拌麵" />
+                <input class="search-input" id="add-srv" type="number" min="1" value="2" style="max-width:110px" placeholder="人份" />
+                <input class="search-input" id="add-time" type="number" min="1" value="15" style="max-width:110px" placeholder="分鐘" />
+              </div>
+              <input class="search-input" id="add-url" placeholder="來源網址（選填，例如 Cookpad 連結）" />
+              <textarea id="add-ings" class="search-input" style="min-height:95px" placeholder="食材清單（一行一項，格式：名稱 數量單位）&#10;例如：&#10;義大利麵 200g&#10;蒜頭 3瓣&#10;培根 60g&#10;鹽 適量"></textarea>
+              <textarea id="add-steps" class="search-input" style="min-height:95px" placeholder="烹飪步驟（一行一步）&#10;例如：&#10;義大利麵加鹽煮10分鐘撈起。&#10;小火炒香蒜末與培根，拌入麵條即可。"></textarea>
+              <button class="btn primary" onclick="submitWebRecipe()">🔍 檢查並加入 Wiki</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2 style="margin-top:0">📋 網頁檢查報告與結果</h2>
+            <div id="add-lint-report" class="empty-hint" style="text-align:left">
+              填寫左側表單並點擊「檢查並加入 Wiki」，這裡會顯示單位與連結檢查結果。
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function submitWebRecipe() {
+      const title = document.getElementById("add-title").value.trim();
+      const category = document.getElementById("add-cat").value.trim() || "未分類";
+      const servings = parseInt(document.getElementById("add-srv").value, 10) || 1;
+      const prepTime = parseInt(document.getElementById("add-time").value, 10) || 15;
+      const sourceUrl = document.getElementById("add-url").value.trim() || "#";
+      const ingLines = document.getElementById("add-ings").value.split("\n").map(s => s.trim()).filter(Boolean);
+      const stepLines = document.getElementById("add-steps").value.split("\n").map(s => s.trim()).filter(Boolean);
+      const reportEl = document.getElementById("add-lint-report");
+
+      if (!title || !ingLines.length || !stepLines.length) {
+        reportEl.innerHTML = "❌ <strong>檢查未通過：</strong>請至少填寫「菜名」、「食材清單」與「烹飪步驟」。";
+        return;
+      }
+
+      const unitMap = { "公克": "g", "克": "g", "毫升": "cc", "ml": "cc", "湯匙": "大匙" };
+      const warnings = [];
+      const ingredients = ingLines.map(line => {
+        const parts = line.split(/\s+/);
+        const name = parts[0];
+        const qty = parts.slice(1).join("") || "適量";
+        const m = qty.match(/^([\d.]+)\s*(.*)$/);
+        if (m) {
+          let unit = m[2] || "份";
+          if (unitMap[unit]) {
+            warnings.push(`單位自動統一：「${name}」的「${unit}」已轉為「${unitMap[unit]}」`);
+            unit = unitMap[unit];
+          }
+          return { name, amount: parseFloat(m[1]), unit, scalable: true };
+        }
+        return { name, amount: 0, unit: qty, scalable: false };
+      });
+
+      const id = "custom_" + Date.now();
+      const body = "## 料理簡介\n由網頁直接新增的食譜。\n\n## 烹飪步驟\n" +
+        stepLines.map((s, i) => `${i + 1}. ${s}`).join("\n");
+
+      const newRecipe = {
+        id, title, author: "使用者自訂", category, servings, prep_time: prepTime,
+        tags: ["網頁新增", category], source_url: sourceUrl, image: "", techniques: [],
+        ingredients, body
+      };
+
+      DATA.recipes.push(newRecipe);
+      const savedCustom = JSON.parse(localStorage.getItem("wiki_custom_recipes") || "[]");
+      savedCustom.push(newRecipe);
+      localStorage.setItem("wiki_custom_recipes", JSON.stringify(savedCustom));
+
+      reportEl.innerHTML = `
+        <div style="color:var(--green);font-weight:700;margin-bottom:8px">✅ 檢查通過！已將「${escapeHtml(title)}」加入 Wiki</div>
+        ${warnings.length ? `<div style="color:var(--amber);font-size:0.88rem;margin-bottom:8px">⚠️ 自動修正提醒：<br>• ${warnings.map(escapeHtml).join("<br>• ")}</div>` : "<div style='font-size:0.88rem;margin-bottom:8px'>✨ 食材單位與格式完全符合規範。</div>"}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          <button class="btn primary" onclick="openRecipeModal('${id}')">立即查看新食譜</button>
+          <button class="btn" onclick="state.tab='recipes';render()">回到食譜總覽</button>
+        </div>
+      `;
+    }
+
     function render() {
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === state.tab));
       const app = document.getElementById("app");
@@ -993,6 +1088,7 @@
       else if (state.tab === "techniques") app.innerHTML = renderWikiCards(DATA.techniques, "技法");
       else if (state.tab === "graph") app.innerHTML = renderGraph();
       else if (state.tab === "ask") app.innerHTML = renderAsk();
+      else if (state.tab === "add") app.innerHTML = renderAddRecipe();
 
       const sb = document.getElementById("search-box");
       if (sb) sb.oninput = (e) => { state.search = e.target.value; render(); document.getElementById("search-box").focus(); };
