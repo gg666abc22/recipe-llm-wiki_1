@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>從零開始學煮麵：麵食料理入門教學簡報（LLM Wiki 知識驅動）</title>
+  <style>
+    :root {
+      --bg: #171412;
+      --slide-bg: #faf7f2;
+      --surface: #ffffff;
+      --surface-alt: #f2ebe0;
+      --text: #231e19;
+      --muted: #6b5f54;
+      --accent: #c85a32;
+      --accent-soft: #fae6de;
+      --green: #2a7b58;
+      --green-soft: #e3f3eb;
+      --blue: #2b5c8f;
+      --blue-soft: #e6eff8;
+      --amber: #b7791f;
+      --amber-soft: #fef3c7;
+      --border: #e4dbce;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .deck {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .slide {
+      display: none;
+      width: 100%;
+      max-width: 1060px;
+      min-height: 600px;
+      max-height: 86vh;
+      overflow-y: auto;
+      background: var(--slide-bg);
+      border-radius: 22px;
+      padding: 40px 48px;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+      animation: fadeIn 0.22s ease-out;
+    }
+    .slide.active { display: flex; flex-direction: column; justify-content: space-between; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .kicker {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+    h1 { margin: 0 0 12px; font-size: 2.3rem; line-height: 1.22; }
+    h2 { margin: 0 0 10px; font-size: 1.8rem; line-height: 1.25; }
+    p.lead { font-size: 1.06rem; color: var(--muted); margin: 0 0 20px; line-height: 1.68; }
+    .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .cols-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    @media (max-width: 860px) {
+      .slide { padding: 26px 22px; }
+      .cols-2, .cols-3, .cols-4 { grid-template-columns: 1fr; }
+      h1 { font-size: 1.7rem; }
+    }
+    .box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 18px;
+    }
+    .box.accent { border-color: #ebc2b2; background: #fffaf8; }
+    .box.green { border-color: #b7decb; background: #f6fcf9; }
+    .box.blue { border-color: #bdd3ea; background: #f6faff; }
+    .box.amber { border-color: #f3d69b; background: #fffcf3; }
+    .box h3 { margin: 0 0 8px; font-size: 1.06rem; }
+    .box p, .box li { color: var(--muted); font-size: 0.93rem; line-height: 1.58; margin: 0; }
+    .box ul { margin: 6px 0 0; padding-left: 18px; }
+    .pill {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: var(--surface-alt);
+      color: var(--text);
+    }
+    .pill.accent { background: var(--accent-soft); color: var(--accent); }
+    .pill.green { background: var(--green-soft); color: var(--green); }
+    .tab-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .tab-pill {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .wiki-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 22px;
+    }
+    .timeline-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+    }
+    .time-badge {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      min-width: 96px;
+      text-align: center;
+    }
+    .controls {
+      height: 60px;
+      background: rgba(255, 255, 255, 0.06);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      color: #e8e1d7;
+    }
+    .ctrl-btn {
+      background: rgba(255, 255, 255, 0.13);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 9px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ctrl-btn:hover { background: rgba(255, 255, 255, 0.24); }
+    .ctrl-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .dots { display: flex; gap: 8px; }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+      border: none;
+      padding: 0;
+    }
+    .dot.active { background: var(--accent); width: 26px; }
+    .slide-footer {
+      margin-top: 18px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .cta-link {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+    .recipe-mini {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .recipe-mini:hover, .recipe-mini.active {
+      border-color: var(--accent);
+      background: #fffaf8;
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <!-- Slide 1 -->
+    <section class="slide active">
+      <div>
+        <span class="kicker">知識來源：食譜 LLM Wiki</span>
+        <h1>從零開始學煮麵：<br>麵食料理入門教學</h1>
+        <p class="lead">
+          這份簡報以我們建立的<strong>食譜 LLM Wiki</strong> 為知識庫，用最白話的方式，帶不熟悉料理的人一次搞懂「煮麵控時、食材處理、提鮮與乳化」四大基本功。
+        </p>
+        <div class="cols-3" id="stats-cards"></div>
+      </div>
+      <div class="slide-footer">
+        <span>使用鍵盤 ← / → 或下方按鈕切換投影片</span>
+        <span>1 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 2 -->
+    <section class="slide">
+      <div>
+        <span class="kicker">基本概念 1 · 認識麵食結構</span>
+        <h2>煮麵其實只有 4 種基本架構</h2>
+        <p class="lead">不管是泡麵、拉麵還是義大利麵，本質上都是「麵體 ＋ 風味基底 ＋ 配料」。先分清楚這 4 類，看食譜就不會霧煞煞：</p>
+        <div class="cols-4">
+          <div class="box accent">
+            <h3>🍲 湯麵類</h3>
+            <p>重點在<strong>湯頭層次</strong>。可利用市售醬包（如日式味噌醬）或烤蒜泥快速做出濃郁湯底。</p>
+            <div style="margin-top:8px"><span class="pill accent">味噌海鮮拉麵</span></div>
+          </div>
+          <div class="box green">
+            <h3>🥢 乾拌麵類</h3>
+            <p>重點在<strong>麵條吸汁</strong>。麵不能煮太爛，下鍋拌入鍋底精華（如蛤蜊鮮汁）後立刻關火。</p>
+            <div style="margin-top:8px"><span class="pill green">九層塔蛤蠣拌麵</span></div>
+          </div>
+          <div class="box blue">
+            <h3>🍝 清炒義麵</h3>
+            <p>重點在<strong>油水乳化</strong>。靠橄欖油與含澱粉的煮麵水拌炒，讓醬汁滑順扒附麵條。</p>
+            <div style="margin-top:8px"><span class="pill">海鮮義大利麵</span></div>
+          </div>
+          <div class="box amber">
+            <h3>🥗 涼麵類</h3>
+            <p>重點在<strong>麵條放涼與冷醬</strong>。煮熟放涼後，淋上免開火調勻的芝麻醬即可。</p>
+            <div style="margin-top:8px"><span class="pill">芝麻醬彩虹涼麵</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>知識來源：wiki/recipes/（5 篇標準化食譜歸納）</span>
+        <span>2 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 3 -->
+    <section class="slide">
+      <div>
+        <span class="kicker">基本概念 2 · 新手最容易失敗的地方</span>
+        <h2>為什麼麵總是煮太爛？關鍵在「控時」</h2>
+        <p class="lead">不同麵條的吸水速度與澱粉結構不同。從 Wiki 歸納出的 4 種麵體黃金時間對照如下：</p>
+        <div>
+          <div class="timeline-bar">
+            <div>
+              <strong>泡麵（乾拌升級用）</strong>
+              <div style="font-size:0.88rem;color:var(--muted)">後續還要下鍋拌炒，熱水浸泡不可過久，預留受熱空間。</div>
+            </div>
+            <span class="time-badge">至多 3 分鐘</span>
+          </div>
+          <div class="timeline-bar">
+            <div>
+              <strong>生拉麵</strong>
+              <div style="font-size:0.88rem;color:var(--muted)">水滾後下鍋用筷子拌散，依喜愛軟硬度撈起瀝乾。</div>
+            </div>
+            <span class="time-badge">3 – 5 分鐘</span>
+          </div>
+          <div class="timeline-bar">
+            <div>
+              <strong>彩虹麵（乾麵 / 涼麵）</strong>
+              <div style="font-size:0.88rem;color:var(--muted)">煮 6 分鐘達到Ｑ彈適中熟度，趁這 6 分鐘剛好調好芝麻醬。</div>
+            </div>
+            <span class="time-badge">約 6 分鐘</span>
+          </div>
+          <div class="timeline-bar">
+            <div>
+              <strong>乾燥義大利麵</strong>
+              <div style="font-size:0.88rem;color:var(--muted)">水裡要「加鹽」讓麵有底味，且撈麵時務必留 50cc 煮麵水！</div>
+            </div>
+            <span class="time-badge">約 10 分鐘</span>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>進階小技巧（安成宰泡麵法）：先下整塊麵，起鍋前再補碎麵，一口吃到雙重口感</span>
+        <span>3 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 4 -->
+    <section class="slide">
+      <div>
+        <span class="kicker">基本概念 3 · 食材百科（Wiki 即時讀取）</span>
+        <h2>下鍋前先懂食材：保存、處理與替代方案</h2>
+        <p class="lead">點選下方任一食材，直接查看我們整理在 <code>wiki/ingredients/</code> 的實戰處理重點：</p>
+        <div class="tab-pills" id="ing-tabs"></div>
+        <div class="wiki-card" id="ing-detail"></div>
+      </div>
+      <div class="slide-footer">
+        <span>資料動態讀取自 web/data.js（與 wiki/ingredients/ 同步）</span>
+        <span>4 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 5 -->
+    <section class="slide">
+      <div>
+        <span class="kicker">基本概念 4 · 看懂料理術語</span>
+        <h2>新手常聽到的「提鮮、梅納反應、乳化」是什麼？</h2>
+        <p class="lead">把聽起來很專業的烹飪詞彙，翻譯成廚房裡看得到的變化：</p>
+        <div class="cols-3">
+          <div class="box accent">
+            <h3>🔥 烤蒜泥（梅納反應）</h3>
+            <p><strong>生蒜嗆辣、烤蒜甘甜。</strong></p>
+            <p style="margin-top:8px">把整球蒜頭 180°C 烤 15 分鐘，糖分焦糖化後壓成泥融入泡麵湯，湯頭會瞬間像熬了很久的高湯。</p>
+          </div>
+          <div class="box green">
+            <h3>🐚 悶煮取鮮（天然味精）</h3>
+            <p><strong>蛤蜊開口＝鮮味釋放完畢。</strong></p>
+            <p style="margin-top:8px">少水加蓋悶 2–3 分鐘，一開口就先夾起蛤蜊（避免肉縮水），把鍋底鮮汁留給麵條吸。</p>
+          </div>
+          <div class="box blue">
+            <h3>💧 油水乳化（醬汁扒麵）</h3>
+            <p><strong>煮麵水澱粉 ＋ 橄欖油。</strong></p>
+            <p style="margin-top:8px">平常油和水會分離，但煮麵水裡有澱粉！兩者一起中火快炒就會變成濃稠光亮的醬汁。</p>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>知識來源：wiki/techniques/</span>
+        <span>5 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 6 -->
+    <section class="slide">
+      <div>
+        <span class="kicker">基本概念 5 · 調味比例公式</span>
+        <h2>不用憑感覺：照著 Wiki 黃金比例調醬汁</h2>
+        <p class="lead">新手最怕「鹽放太多、醬汁太稀」。以 Wiki 中的<strong>「自製涼麵芝麻醬」</strong>為例，試著調整人數看看比例怎麼變：</p>
+        <div class="box accent" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <strong>選擇製作份量：</strong>
+            <button class="tab-pill active" onclick="setSauceSrv(2, this)">2 人份（原食譜）</button>
+            <button class="tab-pill" onclick="setSauceSrv(4, this)">4 人份</button>
+            <button class="tab-pill" onclick="setSauceSrv(6, this)">6 人份</button>
+          </div>
+          <div class="cols-3" id="sauce-grid" style="margin-top:14px"></div>
+        </div>
+        <div class="box">
+          <h3>💡 為什麼要先加「溫水」？</h3>
+          <p>芝麻粉直接加醬油容易結塊；先用溫水攪拌化開，再拌入醬油、烏醋（解膩）、香油（滑順）與糖（平衡酸鹹），1 分鐘就調勻。</p>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>知識來源：wiki/techniques/自製涼麵芝麻醬黃金比例.md</span>
+        <span>6 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 7 -->
+    <section class="slide">
+      <div>
+        <span class="kicker">實戰範例 · Wiki 收錄食譜</span>
+        <h2>挑一道菜，看看完整食材與步驟怎麼拆解</h2>
+        <p class="lead">點擊左側任一道 Wiki 食譜，右側即時顯示它的結構化食材與烹飪重點：</p>
+        <div class="cols-2" style="grid-template-columns: 1fr 1.35fr;">
+          <div id="recipe-list" style="display:flex;flex-direction:column;gap:8px"></div>
+          <div class="wiki-card" id="recipe-preview"></div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>資料動態讀取自 web/data.js（5 篇 Cookpad 種子食譜）</span>
+        <span>7 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 8 -->
+    <section class="slide">
+      <div>
+        <span class="kicker">總結與延伸實作</span>
+        <h2>新手進廚房的三句口訣</h2>
+        <p class="lead">只要記住這三個原則，搭配我們的食譜 LLM Wiki，就能穩定煮出好吃的麵：</p>
+        <div class="cols-3" style="margin-bottom:18px">
+          <div class="box">
+            <h3>1. 控時不軟爛</h3>
+            <p>泡麵拌炒前最多泡 3 分鐘；義大利麵保留煮麵水。</p>
+          </div>
+          <div class="box">
+            <h3>2. 備料先處理</h3>
+            <p>蛤蜊陰暗處吐沙；冷凍蝦解凍務必擦乾再煎。</p>
+          </div>
+          <div class="box">
+            <h3>3. 關火用餘溫</h3>
+            <p>九層塔、蔥花起鍋前才下，保留翠綠與香氣。</p>
+          </div>
+        </div>
+        <div class="box accent">
+          <h3>🌐 想直接查食譜、清冰箱或算採購清單嗎？</h3>
+          <p>這份簡報背後的完整互動知識庫已經準備好了，點下方按鈕即可開啟使用：</p>
+          <a class="cta-link" href="./web/index.html" target="_blank">開啟「食譜 LLM Wiki」互動網頁 →</a>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>簡報結束 · 知識庫會隨著你加入新食譜持續成長</span>
+        <span>8 / 8</span>
+      </div>
+    </section>
+  </div>
+
+  <footer class="controls">
+    <button class="ctrl-btn" id="prev-btn">← 上一頁</button>
+    <div class="dots" id="dots"></div>
+    <button class="ctrl-btn" id="next-btn">下一頁 →</button>
+  </footer>
+
+  <script src="./web/data.js"></script>
+  <script>
+    const DATA = window.RECIPE_WIKI_DATA || { recipes: [], ingredients: [], techniques: [] };
+    const slides = [...document.querySelectorAll(".slide")];
+    const dotsWrap = document.getElementById("dots");
+    let current = 0;
+
+    function esc(s) {
+      return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Slide 1 stats from live Wiki
+    document.getElementById("stats-cards").innerHTML = `
+      <div class="box accent">
+        <h3>🍜 ${DATA.recipes.length} 篇實戰食譜</h3>
+        <p>涵蓋湯麵、乾拌麵、義大利麵與涼麵，全部標準化拆解。</p>
+      </div>
+      <div class="box green">
+        <h3>🥬 ${DATA.ingredients.length} 篇食材百科</h3>
+        <p>整理保存方法、下鍋前處理技巧與可替代食材。</p>
+      </div>
+      <div class="box blue">
+        <h3>🔥 ${DATA.techniques.length} 大烹飪技法</h3>
+        <p>把「烤蒜泥、乳化、悶煮取鮮」翻譯成新手也懂的步驟。</p>
+      </div>
+    `;
+
+    // Slide 4: Ingredient Wiki Explorer
+    function renderIngDetail(idx) {
+      const item = DATA.ingredients[idx];
+      if (!item) return;
+      document.querySelectorAll("#ing-tabs .tab-pill").forEach((b, i) => b.classList.toggle("active", i === idx));
+      const cleanBody = esc(item.body || "")
+        .replace(/\[\[(.*?)\]\]/g, "<strong>$1</strong>")
+        .replace(/## (.*)/g, "<div style='font-weight:700;color:var(--accent);margin-top:8px'>$1</div>")
+        .replace(/\n/g, "<br>");
+      document.getElementById("ing-detail").innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0;font-size:1.2rem">${esc(item.title)}</h3>
+          <span class="pill accent">${esc(item.category)}</span>
+        </div>
+        ${item.storage ? `<p style="font-size:0.9rem;background:var(--surface-alt);padding:8px 12px;border-radius:8px;margin:0 0 8px">📦 <strong>保存方式：</strong>${esc(item.storage)}</p>` : ""}
+        ${item.substitutes ? `<p style="font-size:0.9rem;margin:0 0 8px">🔄 <strong>沒有這個可以用什麼替代？</strong>${item.substitutes.map(esc).join("、")}</p>` : ""}
+        <div style="font-size:0.92rem;color:var(--muted);line-height:1.6">${cleanBody}</div>
+      `;
+    }
+    document.getElementById("ing-tabs").innerHTML = DATA.ingredients.map((ing, i) =>
+      `<button class="tab-pill ${i === 0 ? "active" : ""}" onclick="renderIngDetail(${i})">${esc(ing.title)}</button>`
+    ).join("");
+    renderIngDetail(0);
+
+    // Slide 6: Sauce Ratio Calculator
+    const BASE_SAUCE = [
+      { name: "芝麻粉", amt: 4, unit: "大匙" },
+      { name: "溫水", amt: 2, unit: "大匙" },
+      { name: "醬油", amt: 2, unit: "大匙" },
+      { name: "烏醋", amt: 1.5, unit: "大匙" },
+      { name: "香油", amt: 1, unit: "大匙" },
+      { name: "糖", amt: 1, unit: "小匙" },
+    ];
+    function setSauceSrv(srv, btn) {
+      if (btn) {
+        btn.parentElement.querySelectorAll(".tab-pill").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+      const ratio = srv / 2;
+      document.getElementById("sauce-grid").innerHTML = BASE_SAUCE.map(s => `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between">
+          <strong>${s.name}</strong>
+          <span style="color:var(--accent);font-weight:800">${s.amt * ratio} ${s.unit}</span>
+        </div>
+      `).join("");
+    }
+    setSauceSrv(2);
+
+    // Slide 7: Live Recipe Preview
+    function renderRecipePreview(idx) {
+      const r = DATA.recipes[idx];
+      if (!r) return;
+      document.querySelectorAll("#recipe-list .recipe-mini").forEach((el, i) => el.classList.toggle("active", i === idx));
+      const ings = (r.ingredients || []).slice(0, 6).map(i =>
+        `<span class="pill">${esc(i.name)} ${i.scalable && i.amount ? i.amount : ""}${esc(i.unit)}</span>`
+      ).join(" ");
+      const steps = (r.body || "").split("\n").filter(l => /^\d+\.\s+/.test(l.trim())).slice(0, 4);
+      document.getElementById("recipe-preview").innerHTML = `
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <span class="pill accent">${esc(r.category)}</span>
+          <span class="pill">⏱ ${r.prep_time} 分鐘</span>
+          <span class="pill">🍽 ${r.servings} 人份</span>
+        </div>
+        <h3 style="margin:0 0 8px">${esc(r.title)}</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${ings}</div>
+        <div style="font-size:0.9rem;color:var(--muted);line-height:1.6">
+          <strong>關鍵步驟摘要：</strong>
+          <ol style="margin:6px 0 0;padding-left:18px">
+            ${steps.map(s => `<li>${esc(s.replace(/^\d+\.\s+/, "").replace(/\*\*/g, ""))}</li>`).join("")}
+          </ol>
+        </div>
+      `;
+    }
+    document.getElementById("recipe-list").innerHTML = DATA.recipes.map((r, i) => `
+      <div class="recipe-mini ${i === 0 ? "active" : ""}" onclick="renderRecipePreview(${i})">
+        <div style="font-size:0.78rem;color:var(--accent);font-weight:700">${esc(r.category)} · ${r.prep_time} 分鐘</div>
+        <strong>${esc(r.title)}</strong>
+      </div>
+    `).join("");
+    renderRecipePreview(0);
+
+    // Slide Navigation
+    function go(idx) {
+      current = Math.max(0, Math.min(slides.length - 1, idx));
+      slides.forEach((s, i) => s.classList.toggle("active", i === current));
+      [...dotsWrap.children].forEach((d, i) => d.classList.toggle("active", i === current));
+      document.getElementById("prev-btn").disabled = current === 0;
+      document.getElementById("next-btn").disabled = current === slides.length - 1;
+    }
+    slides.forEach((_, i) => {
+      const dot = document.createElement("button");
+      dot.className = "dot";
+      dot.onclick = () => go(i);
+      dotsWrap.appendChild(dot);
+    });
+    document.getElementById("prev-btn").onclick = () => go(current - 1);
+    document.getElementById("next-btn").onclick = () => go(current + 1);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " ") go(current + 1);
+      if (e.key === "ArrowLeft") go(current - 1);
+    });
+    go(0);
+  </script>
+</body>
+</html>
