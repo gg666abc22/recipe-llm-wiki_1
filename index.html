@@ -1114,7 +1114,7 @@
       });
     }
 
-    document.querySelectorAll(".tab-btn").forEach(btn => {
+    document.querySelectorAll(".tab-btn[data-tab]").forEach(btn => {
       btn.onclick = () => { state.tab = btn.dataset.tab; render(); };
     });
     updateCartCount();
